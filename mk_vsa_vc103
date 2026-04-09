@@ -1,7 +1,6 @@
-### DEFAULT PER LE MASTER VM IP-ADDRESS
-MYIPADDR = '192.168.219.133'
-##############################################
-###d.vm.synced_folder "./files", "/home/vagrant/", type: "rsync", auto: true
+### DEFAULT PER LE VSA IP-ADDRESS
+### MYIPADDR = '192.168.219.133'
+### DISATTIVO IL DEFAULT d.vm.synced_folder "./files", "/home/vagrant/", type: "rsync", auto: true
 scrippa=<<-SCRIPT
     nmcli conn modify ens33 ipv4.address #{ENV['VAGRANT_IP']} && sleep 1
     systemctl stop firewalld
