@@ -1,0 +1,43 @@
+### DEFAULT PER LE MASTER VSA IP-ADDRESS
+### MYIPADDR = '192.168.219.133'
+### TEMPLT VCBC per template preidposto sotto ###
+scrippa=<<-SCRIPT
+    nmcli conn modify ens192 ipv4.address #{ENV['VAGRANT_IP']} && sleep 1
+    systemctl stop firewalld
+    systemctl disable firewalld
+    cd /root &&  tar -xf /root/vsa_linux.tar
+    echo "Avvio setup agente VSA Commvault.."
+    /root/pkg/silent_install -auth #{ENV['CMV_MYAUTH']}
+    rm -rf /root/cfg && rm -rf /root/pkg
+    echo "Ricorda: set root password + rimozione impronta vagrant"
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = 'dummy'
+  config.ssh.keys_only = false
+  config.ssh.username = "vagrant"
+  config.ssh.password = "vagrant"
+  config.vm.box_url = "../template/dummy.box"
+  #config.vm.synced_folder "./files", "/home/vagrant/", type: "rsync"
+  config.vm.synced_folder ".", "/home/vagrant/", disabled: true
+  config.vm.hostname = ENV['VAGRANT_VMNAME']
+  config.vm.boot_timeout = 60
+  config.vm.provision "shell", inline: scrippa
+
+  config.vm.provider :vsphere do |vsphere|
+    vsphere.host = ENV['VSPHERE_HOST']
+    vsphere.user = ENV['VSPHERE_USER']
+    vsphere.password = ENV['VSPHERE_PASSWORD']
+    vsphere.insecure = 'true'
+    vsphere.name = ENV['VAGRANT_VMNAME']
+    vsphere.template_name = '/Service/Commvault/commvault_vsa_OL9'
+    vsphere.compute_resource_name = 'BC'
+    #vsphere.data_center_name = 'DatacenterBC'
+    #vsphere.resource_pool_name = 'Commvault'
+    ### VALORI LARGE DOCUMENTAZIONE COMMVAULT
+    vsphere.memory_mb = '65536'
+    vsphere.cpu_count = '12'
+    vsphere.notes = 'VSA Commvault'
+    #vsphere.network_name = 'Leonet|AP-NetApp|EPG-COMM-DATAPROT'
+ end
+end
